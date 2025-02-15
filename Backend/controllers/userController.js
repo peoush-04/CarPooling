@@ -1,20 +1,30 @@
 import User from '../models/User.js';
-
+import { makeMaskedCall } from '../utils/twilioService.js';
 // @desc Get user profile
 // @route GET /api/users/profile
 // @access Private
 export const getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('-password'); // Exclude password
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    try {
+      const user = await User.findById(req.user._id).select('-password');
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Apply privacy settings
+      const modifiedUser = {
+        _id: user._id,
+        name: user.privacySettings.hideFullName ? user.name.charAt(2) + '...' : user.name,
+        email: user.email,
+        phone: user.phone ? `+XX-XXXXXX${user.phone.slice(-4)}` : '', // Mask phone number
+        profilePicture: user.privacySettings.blurProfilePicture ? 'blurred.jpg' : user.profilePicture,
+      };
+  
+      res.json(modifiedUser);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
     }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
+  };
 // @desc Update user profile
 // @route PUT /api/users/profile
 // @access Private
@@ -41,3 +51,51 @@ export const updateUserProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const updatePrivacySettings = async (req, res) => {
+    try {
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          $set: {
+            'privacySettings.hideFullName': req.body.hideFullName,
+            'privacySettings.blurProfilePicture': req.body.blurProfilePicture,
+          },
+        },
+        { new: true, runValidators: false } // Disable full validation
+      );
+  
+      res.json({ message: 'Privacy settings updated successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error' });
+    }
+  };
+  
+  
+  export const callUserSecurely = async (req, res) => {
+    try {
+      const { userId } = req.body;
+  
+      const fromUser = await User.findById(req.user._id);
+      const toUser = await User.findById(userId);
+  
+      if (!toUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Ensure one user is a Rider and the other is a Driver
+      if (fromUser.role === toUser.role) {
+        return res.status(403).json({ message: 'Forbidden: Calls can only be made between a Rider and a Driver' });
+      }
+  
+      const callSid = await makeMaskedCall(fromUser, toUser);
+      res.json({ message: 'Call initiated', callSid });
+    } catch (error) {
+      res.status(500).json({ message: 'Call failed' });
+    }
+  };

@@ -3,18 +3,22 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    phone: { type: String, unique: true }, // Ensure phone remains required
+    role: {
       type: String,
-      required: true,
+      required:true,
+      enum: ['Driver', 'Rider'], // Only allow "Driver" or "Rider"
+      default: 'Rider', // Default role is Rider
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
+    profilePicture: {
+      type: String, // URL of the profile picture
     },
-    password: {
-      type: String,
-      required: true,
+    privacySettings: {
+      hideFullName: { type: Boolean, default: false },
+      blurProfilePicture: { type: Boolean, default: false },
     },
   },
   { timestamps: true }
