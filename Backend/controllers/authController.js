@@ -27,10 +27,10 @@ import bcrypt from 'bcryptjs';
       }
   
       // 🔹 Validate phone number format (Only digits, length 10)
-      const phoneRegex = /^[0-9]{10}$/;
-      if (!phoneRegex.test(phone)) {
-        return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
-      }
+      const phoneRegex = /^\+\d{1,3}\d{10}$/;  // Format: +[country code][10-digit number]
+        if (!phoneRegex.test(phone)) {
+            return res.status(400).json({ message: 'Invalid phone number. Format: +[country code][10-digit number] (e.g., +919876543210)' });
+        }
   
       // 🔹 Validate role (Only "Driver" or "Rider")
       if (!['Driver', 'Rider'].includes(role)) {
@@ -44,10 +44,10 @@ import bcrypt from 'bcryptjs';
       }
   
       // 🔹 Check if phone number already exists
-      const phoneExists = await User.findOne({ phone });
-      if (phoneExists) {
-        return res.status(400).json({ message: 'User with this phone number already exists' });
-      }
+      // const phoneExists = await User.findOne({ phone });
+      // if (phoneExists) {
+      //   return res.status(400).json({ message: 'User with this phone number already exists' });
+      // }
   
       // password hashed in User.js before saving in db 
 

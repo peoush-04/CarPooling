@@ -14,7 +14,7 @@ export const getUserProfile = async (req, res) => {
       // Apply privacy settings
       const modifiedUser = {
         _id: user._id,
-        name: user.privacySettings.hideFullName ? user.name.charAt(2) + '...' : user.name,
+        name: user.privacySettings.hideFullName ? user.name.charAt(0) + '...' : user.name,
         email: user.email,
         phone: user.phone ? `+XX-XXXXXX${user.phone.slice(-4)}` : '', // Mask phone number
         profilePicture: user.privacySettings.blurProfilePicture ? 'blurred.jpg' : user.profilePicture,

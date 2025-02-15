@@ -168,7 +168,7 @@ export const respondToRideRequest = async (req, res) => {
       } else if (status === 'reject') {
           ride.requests = ride.requests.filter(reqId => reqId.toString() !== riderId.toString());
           await ride.save();
-
+          await sendSMS(rider.phone, `🚗 Your ride with ${driver.name} has been rejected!`);
           res.json({ message: 'Ride request rejected', rideId, riderId });
       } else {
           res.status(400).json({ message: 'Invalid status. Use "approve" or "reject"' });
@@ -194,7 +194,7 @@ export const shareLiveLocation = async (req, res) => {
       const messages = user.emergencyContacts.map(async (contact) => {
           return sendSMS(
               contact.phone,
-              `🚗 ALERT: ${user.name} is currently on a ride. Live Location: ${location.lat}, ${location.long}.`
+              ` ALERT: ${user.name} is currently on a ride and is in emergency. Live Location: ${location.lat}, ${location.long}.`
           );
       });
 

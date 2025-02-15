@@ -32,35 +32,7 @@ app.get('/', (req, res) => {
     res.send('API is running...');
 });
 
-// Start Server
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
-});
-
-// WebSocket event handling
-io.on('connection', (socket) => {
-  console.log('New client connected:', socket.id);
-
-  socket.on('join', (userId) => {
-    socket.join(userId);
-  });
-
-  socket.on('sendMessage', async ({ sender, receiver, message }) => {
-    const newMessage = new Message({ sender, receiver, message });
-    await newMessage.save();
-
-    io.to(receiver).emit('receiveMessage', newMessage);
-  });
-
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
-});
-
 // Start the server
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 

@@ -10,7 +10,7 @@ import { shareLiveLocation } from '../controllers/rideController.js';
 const router = express.Router();
 
 // ✅ Only Drivers can create rides
-router.post('/', protect, authorize(['Driver']), createRide);
+router.post('/create', protect, authorize(['Driver']), createRide);
 
 // ✅ Only Riders can search and request rides
 router.get('/find', protect, authorize(['Rider']), findAndRequestRide);
