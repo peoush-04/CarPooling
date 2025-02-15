@@ -6,7 +6,7 @@ import {
     respondToRideRequest 
 } from '../controllers/rideController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
-
+import { shareLiveLocation } from '../controllers/rideController.js';
 const router = express.Router();
 
 // ✅ Only Drivers can create rides
@@ -18,5 +18,7 @@ router.post('/request', protect, authorize(['Rider']), requestToJoinRide);
 
 // ✅ Only Drivers can approve or reject ride requests
 router.put('/respond', protect, authorize(['Driver']), respondToRideRequest);
+
+router.post('/share-location', protect, shareLiveLocation);
 
 export default router;

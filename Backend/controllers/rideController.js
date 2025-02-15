@@ -1,7 +1,7 @@
 import Ride from '../models/Ride.js';
 import User from '../models/User.js';
 import mongoose from 'mongoose';
-
+import { sendSMS } from '../utils/twilioService.js';
 // @desc Create a ride
 // @route POST /api/rides
 // @access Private (Only logged-in drivers)
@@ -145,25 +145,24 @@ export const requestToJoinRide = async (req, res) => {
 // 🔹 Approve or Reject Ride Request (Only Driver)
 export const respondToRideRequest = async (req, res) => {
   try {
-      const { rideId, riderId, status } = req.body; // status = "approve" or "reject"
+      const { rideId, riderId, status } = req.body;
       const driver = await User.findById(req.user._id);
-      console.log("driver : ",driver);
-      if (!driver || driver.role !== 'Driver') {
-          return res.status(403).json({ message: 'Only Drivers can approve ride requests' });
-      }
-
+      const rider = await User.findById(riderId);
       const ride = await Ride.findById(rideId);
+
       if (!ride || ride.driver.toString() !== driver._id.toString()) {
           return res.status(404).json({ message: 'Ride not found or unauthorized' });
       }
 
       if (status === 'approve') {
-          ride.passengers = ride.passengers || [];
           ride.passengers.push(riderId);
           ride.availableSeats--;
 
           ride.requests = ride.requests.filter(reqId => reqId.toString() !== riderId.toString());
           await ride.save();
+
+          // Send SMS notification to Rider
+          await sendSMS(rider.phone, `🚗 Your ride with ${driver.name} has been approved!`);
 
           res.json({ message: 'Ride request approved', rideId, riderId });
       } else if (status === 'reject') {
@@ -176,5 +175,33 @@ export const respondToRideRequest = async (req, res) => {
       }
   } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const shareLiveLocation = async (req, res) => {
+  try {
+      const user = await User.findById(req.user._id);
+      if (!user || user.role !== 'Rider') {
+          return res.status(403).json({ message: 'Only Riders can share location' });
+      }
+
+      const { location } = req.body;  // location = { lat, long }
+      if (!location) {
+          return res.status(400).json({ message: 'Location is required' });
+      }
+
+      // Send location update to all emergency contacts
+      const messages = user.emergencyContacts.map(async (contact) => {
+          return sendSMS(
+              contact.phone,
+              `🚗 ALERT: ${user.name} is currently on a ride. Live Location: ${location.lat}, ${location.long}.`
+          );
+      });
+
+      await Promise.all(messages);
+
+      res.json({ message: 'Live location shared with emergency contacts' });
+  } catch (error) {
+      res.status(500).json({ message: 'Failed to share location', error: error.message });
   }
 };

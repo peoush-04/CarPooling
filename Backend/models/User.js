@@ -20,6 +20,13 @@ const userSchema = new mongoose.Schema(
       hideFullName: { type: Boolean, default: false },
       blurProfilePicture: { type: Boolean, default: false },
     },
+    
+    emergencyContacts: [
+        {
+            name: { type: String, required: true },
+            phone: { type: String, required: true }
+        }
+    ]
   },
   { timestamps: true }
 );

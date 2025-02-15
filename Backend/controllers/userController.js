@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-import { makeMaskedCall } from '../utils/twilioService.js';
+import { sendSMS } from '../utils/twilioService.js';
 // @desc Get user profile
 // @route GET /api/users/profile
 // @access Private
@@ -77,25 +77,38 @@ export const updatePrivacySettings = async (req, res) => {
   };
   
   
-  export const callUserSecurely = async (req, res) => {
+  export const sendUserSMS = async (req, res) => {
     try {
-      const { userId } = req.body;
-  
-      const fromUser = await User.findById(req.user._id);
-      const toUser = await User.findById(userId);
-  
-      if (!toUser) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Ensure one user is a Rider and the other is a Driver
-      if (fromUser.role === toUser.role) {
-        return res.status(403).json({ message: 'Forbidden: Calls can only be made between a Rider and a Driver' });
-      }
-  
-      const callSid = await makeMaskedCall(fromUser, toUser);
-      res.json({ message: 'Call initiated', callSid });
+        const { userId, message } = req.body;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const messageSid = await sendSMS(user.phone, message);
+        res.json({ message: 'SMS sent successfully', messageSid });
     } catch (error) {
-      res.status(500).json({ message: 'Call failed' });
+        res.status(500).json({ message: 'SMS failed' });
     }
-  };
+};
+
+export const addEmergencyContacts = async (req, res) => {
+  try {
+    
+      const user = await User.findById(req.user._id);
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+      if (user.role !== 'Rider') {
+        return res.status(403).json({ message: 'Only Riders can share location' });
+    }
+
+      user.emergencyContacts = req.body.contacts;  // List of { name, phone }
+      await user.save();
+
+      res.json({ message: 'Emergency contacts updated', contacts: user.emergencyContacts });
+  } catch (error) {
+      res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
