@@ -6,15 +6,15 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    phone: { type: String, unique: true }, // Ensure phone remains required
+    phone: { type: String, unique: true },
     role: {
       type: String,
       required:true,
-      enum: ['Driver', 'Rider'], // Only allow "Driver" or "Rider"
-      default: 'Rider', // Default role is Rider
+      enum: ['Driver', 'Rider'], // Only allow "driver" or "rider"
+      default: 'Rider',
     },
     profilePicture: {
-      type: String, // URL of the profile picture
+      type: String, // url of the profile picture
     },
     privacySettings: {
       hideFullName: { type: Boolean, default: false },

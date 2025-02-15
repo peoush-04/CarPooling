@@ -19,7 +19,7 @@ export const protect = async (req, res, next) => {
 
 export const authorize = (roles) => (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Forbidden: You do not have access auth' });
+      return res.status(403).json({ message: 'Forbidden: You do not have access' });
     }
     next();
   };

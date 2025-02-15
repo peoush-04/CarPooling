@@ -6,9 +6,6 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import rideRoutes from './routes/rideRoutes.js';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
-import Message from './models/Message.js';
 import messageRoutes from './routes/messageRoutes.js';
 
 // Load environment variables
@@ -23,6 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rides', rideRoutes);

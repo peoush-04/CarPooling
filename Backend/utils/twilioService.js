@@ -3,15 +3,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize Twilio Client
+// Initialize twilio client
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Function to send SMS
 export const sendSMS = async (to, message) => {
     try {
         const response = await client.messages.create({
-            from: process.env.TWILIO_PHONE_NUMBER,  // Your Twilio Number
-            to,  // Receiver's Phone Number
+            from: process.env.TWILIO_PHONE_NUMBER,  // my twilio Number
+            to,  // receiver's phone number
             body: message
         });
         return response.sid;  // Message SID for tracking

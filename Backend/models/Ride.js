@@ -22,10 +22,10 @@ const rideSchema = new mongoose.Schema(
       petsAllowed: { type: Boolean, default: false },
     },
     requests: [
-      { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Riders who requested this ride
+      { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // riders who requested this ride
     ],
     passengers: [
-      { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Approved passengers
+      { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // approved passengers
     ],
   },
   { timestamps: true }
